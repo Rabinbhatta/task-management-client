@@ -1,6 +1,6 @@
 "use client";
 
-import Login from "@/components/register";
+import Register from "@/components/register";
 import React from "react";
 import {
   useQuery,
@@ -16,7 +16,7 @@ const Pages = () => {
   return (
     <div>
       <QueryClientProvider client={queryClient}>
-        <Login />
+        <Register />
       </QueryClientProvider>
     </div>
   );

@@ -2,8 +2,11 @@
 import Link from "next/link";
 import * as z from "zod";
 import { SubmitHandler, useForm } from "react-hook-form";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { registerUser } from "@/services/user";
+import { signIn } from "next-auth/react";
 
 const registerSchema = z.object({
   email: z.string().email({ message: "Invalid email address" }),
@@ -14,17 +17,42 @@ const registerSchema = z.object({
 
 export type formfields = z.infer<typeof registerSchema>;
 
-export default function Register() {
+export default function Login() {
   const {
     handleSubmit,
     register,
     formState: { errors },
   } = useForm<formfields>({ resolver: zodResolver(registerSchema) });
-  // const router = useRouter();
+  const router = useRouter();
 
-  const onSubmit: SubmitHandler<formfields> = (data) => {
+  const { mutate: mutateLogin } = useMutation({
+    mutationFn: (data: formfields) =>
+      signIn("credentials", {
+        email: data.email,
+        password: data.password,
+        redirect: false,
+      }),
+    onSuccess: (response: any) => {
+      if (response?.error) {
+        // Handle login error
+        console.log(response);
+        toast.error(response.error?.data?.message || "Invalid credentials");
+      } else {
+        // Handle successful login
+        toast.success("Login successful");
+        router.push("/");
+      }
+    },
+    onError: (error: any) => {
+      console.error(error);
+      toast.error("An unexpected error occurred.");
+    },
+  });
+
+  const onSubmit: SubmitHandler<formfields> = async (data) => {
     try {
       if (data) {
+        mutateLogin(data);
       }
     } catch (error) {
       console.error(error);
@@ -35,7 +63,7 @@ export default function Register() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
         <h1 className="text-3xl font-bold text-center mb-6 text-gray-800">
-          Register
+          Login
         </h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
           <div>
