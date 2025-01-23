@@ -4,8 +4,14 @@ import * as z from "zod";
 import { SubmitHandler, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { registerUser } from "@/services/user";
+import { useMutation } from "@tanstack/react-query";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 const registerSchema = z.object({
+  fullName: z
+    .string()
+    .min(3, { message: "FullName must be at least 3 characters" }),
   email: z.string().email({ message: "Invalid email address" }),
   password: z
     .string()
@@ -20,11 +26,27 @@ export default function Register() {
     register,
     formState: { errors },
   } = useForm<formfields>({ resolver: zodResolver(registerSchema) });
-  // const router = useRouter();
+  const router = useRouter();
+
+  const { mutate: mutateRegister } = useMutation({
+    mutationFn: (data: formfields) => registerUser(data),
+    onSuccess: () => {
+      toast.success("Registration successful");
+      router.push("/login");
+    },
+    onError: (error: any) => {
+      const message =
+        error.response?.data?.message ||
+        "An error occurred while changing the password.";
+      console.log(error);
+      toast.error(message);
+    },
+  });
 
   const onSubmit: SubmitHandler<formfields> = (data) => {
     try {
       if (data) {
+        mutateRegister(data);
       }
     } catch (error) {
       console.error(error);
@@ -38,6 +60,20 @@ export default function Register() {
           Register
         </h1>
         <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+          <div>
+            <label className="block text-sm font-medium text-gray-700">
+              User name
+            </label>
+            <input
+              type="text"
+              {...register("fullName")}
+              className="mt-1 block w-full px-4 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              required
+            />
+            {errors.fullName && (
+              <p className="text-red-500 text-sm">{errors.fullName.message}</p>
+            )}
+          </div>
           <div>
             <label className="block text-sm font-medium text-gray-700">
               Email
@@ -70,13 +106,13 @@ export default function Register() {
             type="submit"
             className="w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
           >
-            Login
+            Register
           </button>
         </form>
         <p className="mt-6 text-center text-sm text-gray-600">
-          Don't have an account?{" "}
-          <Link href="/register" className="text-blue-600 hover:underline">
-            Register here
+          Already have an account?{" "}
+          <Link href="/login" className="text-blue-600 hover:underline">
+            Login here
           </Link>
         </p>
       </div>

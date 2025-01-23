@@ -1,12 +1,7 @@
-"use client";
+import React from "react";
 
-import Index from '@/components/login';
-import React from 'react';
-
-const Pages = () => {
-  return (
-    <div><Index/></div>
-  );
+const page = () => {
+  return <div>page</div>;
 };
 
-export default Pages;
+export default page;
