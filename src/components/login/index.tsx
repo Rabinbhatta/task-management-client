@@ -34,7 +34,6 @@ export default function Login() {
       }),
     onSuccess: (response: any) => {
       if (response?.error) {
-        // Handle login error
         console.log(response);
         toast.error(response.error?.data?.message || "Invalid credentials");
       } else {
