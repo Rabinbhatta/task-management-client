@@ -41,6 +41,15 @@ const authOptions: NextAuthOptions = {
     }),
   ],
   callbacks: {
+    async jwt({ token, user }: { token: JWT; user: User }) {
+      if (user) {
+        token.id = user.id;
+        token.name = user.name;
+        token.email = user.email;
+        token.jwt = (user as any).jwt;
+      }
+      return token;
+    },
     async session({ session, token }: { session: any; token: JWT }) {
       if (token) {
         session.user = {
@@ -51,15 +60,6 @@ const authOptions: NextAuthOptions = {
         };
       }
       return session;
-    },
-    async jwt({ token, user }: { token: JWT; user: User }) {
-      if (user) {
-        token.id = user.id;
-        token.name = user.name;
-        token.email = user.email;
-        token.jwt = (user as any).jwt;
-      }
-      return token;
     },
   },
   pages: {
